@@ -1,35 +1,43 @@
+using System;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
+using VContainer;
 
 public sealed class MoveMotor : NetworkBehaviour
 {
+    private const int ModuleCapacity = 16;
+
     [Header("Physics")]
     [SerializeField] private PlayerPhysics _playerPhysics;
     [SerializeField] private GroundSensor _groundSensor;
 
+    [Header("Modules")]
+    [SerializeField] private MotorModuleInstaller _moduleInstaller;
+
+    [Networked, Capacity(ModuleCapacity)]
+    private NetworkLinkedList<ContentId> ModuleIds => default;
+
+    [Networked] private NetworkButtons PreviousButtons { get; set; }
+
     private readonly ForceAccumulator _accumulator = new();
-    private readonly List<IMotorModule> _modules = new();
-    private NetworkButtons _buttons;
+    private readonly List<ContentId> _cachedModuleIds = new(ModuleCapacity);
+    private readonly List<IMotorModule> _cachedModules = new(ModuleCapacity);
 
-    public void ClearModules()
+    private MotorModuleFactory _moduleFactory;
+    private ICMS _cms;
+
+    [Inject]
+    public void Construct(MotorModuleFactory moduleFactory, ICMS cms)
     {
-        _modules.Clear();
+        _moduleFactory = moduleFactory;
+        _cms = cms;
     }
 
-    public void AddRangeOfModules(params IMotorModule[] modules)
+    public override void Spawned()
     {
-        _modules.AddRange(modules);
-    }
-
-    public void AddModule(IMotorModule module)
-    {
-        _modules.Add(module);
-    }
-
-    public void RemoveModule(IMotorModule module)
-    {
-        _modules.Remove(module);
+        if (HasStateAuthority)
+            SetModules(_moduleInstaller.InitialModules);
     }
 
     public override void FixedUpdateNetwork()
@@ -37,11 +45,12 @@ public sealed class MoveMotor : NetworkBehaviour
         if (!GetInput(out InputData input))
             return;
 
+        SynchronizeModuleCache();
         _groundSensor.Scan();
 
         var context = new MotorContext(
             input,
-            _buttons,
+            PreviousButtons,
             _playerPhysics,
             _groundSensor,
             Runner.DeltaTime
@@ -49,13 +58,76 @@ public sealed class MoveMotor : NetworkBehaviour
 
         _accumulator.Clear();
 
-        foreach (IMotorModule module in _modules)
+        foreach (var module in _cachedModules)
         {
-            ForceData forceData = module.Evaluate(in context);
+            var forceData = module.Evaluate(in context);
             _accumulator.Add(in forceData);
         }
 
         _accumulator.Apply(_playerPhysics);
-        _buttons = input.buttons;
+        PreviousButtons = input.buttons;
+    }
+
+    public bool TryAddModule(ContentId moduleConfigId)
+    {
+        if (!HasStateAuthority || !moduleConfigId.IsValid || !_cms.TryGet<MotorModuleDefinition>(moduleConfigId, out _))
+        {
+            return false;
+        }
+
+        if (ModuleIds.Count >= ModuleIds.Capacity)
+            return false;
+
+        ModuleIds.Add(moduleConfigId);
+        return true;
+    }
+
+    public bool TryRemoveModule(ContentId moduleConfigId)
+    {
+        if (!HasStateAuthority || !moduleConfigId.IsValid)
+            return false;
+
+        return ModuleIds.Remove(moduleConfigId);
+    }
+
+    private void SetModules(IReadOnlyList<ContentId> moduleConfigIds)
+    {
+        ModuleIds.Clear();
+
+        foreach (var moduleConfigId in moduleConfigIds)
+            ModuleIds.Add(moduleConfigId);
+    }
+
+    private void SynchronizeModuleCache()
+    {
+        if (IsModuleCacheCurrent())
+            return;
+
+        _cachedModuleIds.Clear();
+        _cachedModules.Clear();
+
+        foreach (var moduleId in ModuleIds)
+        {
+            _cachedModuleIds.Add(moduleId);
+            _cachedModules.Add(_moduleFactory.Create(moduleId));
+        }
+    }
+
+    private bool IsModuleCacheCurrent()
+    {
+        if (_cachedModuleIds.Count != ModuleIds.Count)
+            return false;
+
+        var index = 0;
+
+        foreach (var moduleId in ModuleIds)
+        {
+            if (_cachedModuleIds[index] != moduleId)
+                return false;
+
+            index++;
+        }
+
+        return true;
     }
 }

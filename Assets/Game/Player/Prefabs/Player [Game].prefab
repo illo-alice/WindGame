@@ -282,6 +282,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveMotor
   _playerPhysics: {fileID: 520200816651117767}
   _groundSensor: {fileID: 7116025211578619402}
+  _moduleInstaller: {fileID: 6328219404818720051}
 --- !u!114 &6328219404818720051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -294,16 +295,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc2da157476a47eaa5f66a5f12a3724e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MotorModuleInstaller
-  _acceleration: 30
-  _maxSpeed: 8
-  _sprintMaxSpeed: 12
-  _sprintAccelerationMultiplier: 1.5
-  _groundDeceleration: 40
-  _airDeceleration: 5
-  _jumpForce: 14
-  _upGravity: 25
-  _downGravity: 40
-  _motor: {fileID: 3105360621455613355}
+  _initialModules:
+  - {fileID: 11400000, guid: d1c36f6bcb2a4c9081f8cbd3be54a101, type: 2}
+  - {fileID: 11400000, guid: d1c36f6bcb2a4c9081f8cbd3be54a102, type: 2}
+  - {fileID: 11400000, guid: d1c36f6bcb2a4c9081f8cbd3be54a103, type: 2}
+  - {fileID: 11400000, guid: d1c36f6bcb2a4c9081f8cbd3be54a104, type: 2}
+  - {fileID: 11400000, guid: d1c36f6bcb2a4c9081f8cbd3be54a105, type: 2}
 --- !u!114 &7116025211578619402
 MonoBehaviour:
   m_ObjectHideFlags: 0
