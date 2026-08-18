@@ -4,9 +4,9 @@ WindGame is a work-in-progress two-player cooperative physics climber. Players u
 
 ## Requirements
 
-- Unity `6000.3.9f1`
-- Photon Fusion SDK `2.1.1 Stable` (build `2177`)
-- Fusion Physics Addon `2.1.1` (build `1199`)
+- Unity `6000.5.8f1`
+- Photon Fusion SDK `2.1.1 Stable`
+- Fusion Physics Addon `2.1.2`
 
 Unity Package Manager restores the remaining dependencies automatically from the `Packages` directory.
 
@@ -19,8 +19,9 @@ Unity Package Manager restores the remaining dependencies automatically from the
 5. If importing Photon overwrites the project configuration, restore these files from Git:
    - `Assets/Photon/Fusion/Resources/NetworkProjectConfig.fusion`
    - `Assets/Photon/Fusion/Resources/PhotonAppSettings.asset`
+6. Enter your Photon Fusion App ID in `PhotonAppSettings.asset` locally.
 
-The Photon SDK itself is not included in the repository. The project-specific Fusion configuration and Photon AppId are tracked in Git.
+The Photon SDK itself is not included in the repository. Git tracks the Fusion configuration and an empty `PhotonAppSettings.asset` template. A populated Photon App ID is local configuration and must not be committed.
 
 To test multiplayer, run a standalone build alongside the Unity Editor or open the project in a second Editor instance. The first player hosts `WindGameRoom`; the second joins as a client.
 
