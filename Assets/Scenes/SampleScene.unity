@@ -228,7 +228,7 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 410087039}
   m_Enabled: 1
-  serializedVersion: 12
+  serializedVersion: 13
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2
@@ -280,7 +280,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
-  m_ShadowRadius: 0
+  m_ShapeRadius: 0
   m_ShadowAngle: 0
   m_LightUnit: 1
   m_LuxAtDistance: 1
@@ -469,6 +469,71 @@ Transform:
   m_Children: []
   m_Father: {fileID: 179756786}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &886670607
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 84026493797808567, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: _id
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4669832091268022565, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: SortKey
+      value: 1525410504
+      objectReference: {fileID: 0}
+    - target: {fileID: 5149471381521310797, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_Name
+      value: Grapple Sphere (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 19.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 16.14
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7929831092257138518, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
 --- !u!1 &1824844173
 GameObject:
   m_ObjectHideFlags: 0
@@ -876,7 +941,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineThirdPersonAim
   AimCollisionFilter:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 65
   IgnoreTag: 
   AimDistance: 200
   NoiseCancellation: 1
@@ -972,6 +1037,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 84026493797808567, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
+      propertyPath: _id
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4669832091268022565, guid: ce6703026132a71458fc2b9f8ee6596e, type: 3}
       propertyPath: SortKey
       value: 2411085915
@@ -1038,3 +1107,4 @@ SceneRoots:
   - {fileID: 645029341}
   - {fileID: 162117714}
   - {fileID: 8125708186686779498}
+  - {fileID: 886670607}

@@ -33,8 +33,8 @@ To test multiplayer, run a standalone build alongside the Unity Editor or open t
 | Look | Mouse |
 | Jump | `Space` |
 | Sprint | `Left Shift` |
-| Blower action (WIP) | Left mouse button |
+| Fire / grapple (suction mode) | Left mouse button |
 
 ## Status
 
-The multiplayer player controller and predicted physics foundation are implemented. Blower interactions, level progression, and the win/reset loop are still in development.
+The multiplayer player controller, predicted physics foundation, runtime motor-module sources, and networked grapple swinging are implemented. Air blower push/pull behavior, mode switching, level progression, and the win/reset loop are still in development.

@@ -14,6 +14,7 @@ public sealed class MoveMotor : NetworkBehaviour
 
     [Header("Modules")]
     [SerializeField] private MotorModuleInstaller _moduleInstaller;
+    [SerializeField] private RuntimeMotorModuleRegistry _runtimeModuleRegistry;
 
     [Networked, Capacity(ModuleCapacity)]
     private NetworkLinkedList<ContentId> ModuleIds => default;
@@ -45,16 +46,19 @@ public sealed class MoveMotor : NetworkBehaviour
         if (!GetInput(out InputData input))
             return;
 
-        SynchronizeModuleCache();
         _groundSensor.Scan();
 
         var context = new MotorContext(
             input,
             PreviousButtons,
+            transform,
             _playerPhysics,
             _groundSensor,
             Runner.DeltaTime
         );
+
+        _runtimeModuleRegistry.Synchronize(in context, this);
+        SynchronizeModuleCache();
 
         _accumulator.Clear();
 
@@ -70,24 +74,38 @@ public sealed class MoveMotor : NetworkBehaviour
 
     public bool TryAddModule(ContentId moduleConfigId)
     {
-        if (!HasStateAuthority || !moduleConfigId.IsValid || !_cms.TryGet<MotorModuleDefinition>(moduleConfigId, out _))
-        {
-            return false;
-        }
-
-        if (ModuleIds.Count >= ModuleIds.Capacity)
+        if (!CanChangeModules || !IsKnownModule(moduleConfigId))
             return false;
 
-        ModuleIds.Add(moduleConfigId);
-        return true;
+        return SetModuleActive(moduleConfigId, true);
     }
 
     public bool TryRemoveModule(ContentId moduleConfigId)
     {
-        if (!HasStateAuthority || !moduleConfigId.IsValid)
+        if (!CanChangeModules || !moduleConfigId.IsValid)
             return false;
 
-        return ModuleIds.Remove(moduleConfigId);
+        return SetModuleActive(moduleConfigId, false);
+    }
+
+    public bool SetModuleActive(ContentId moduleId, bool isActive)
+    {
+        if (!CanChangeModules || !IsKnownModule(moduleId))
+            return false;
+
+        var contains = ContainsModule(moduleId);
+
+        if (contains == isActive)
+            return true;
+
+        if (!isActive)
+            return ModuleIds.Remove(moduleId);
+
+        if (ModuleIds.Count >= ModuleIds.Capacity)
+            return false;
+
+        ModuleIds.Add(moduleId);
+        return true;
     }
 
     private void SetModules(IReadOnlyList<ContentId> moduleConfigIds)
@@ -109,8 +127,41 @@ public sealed class MoveMotor : NetworkBehaviour
         foreach (var moduleId in ModuleIds)
         {
             _cachedModuleIds.Add(moduleId);
+
+            if (_runtimeModuleRegistry.TryResolve(moduleId, out var runtimeModule))
+            {
+                _cachedModules.Add(runtimeModule);
+                continue;
+            }
+
+            if (_runtimeModuleRegistry.Contains(moduleId))
+            {
+                throw new InvalidOperationException(
+                    $"Runtime motor module '{moduleId}' is active but was not resolved."
+                );
+            }
+
             _cachedModules.Add(_moduleFactory.Create(moduleId));
         }
+    }
+
+    private bool CanChangeModules =>
+        HasStateAuthority || HasInputAuthority;
+
+    private bool IsKnownModule(ContentId moduleId) =>
+        moduleId.IsValid &&
+        (_runtimeModuleRegistry.Contains(moduleId) ||
+         _cms.TryGet<MotorModuleDefinition>(moduleId, out _));
+
+    private bool ContainsModule(ContentId moduleId)
+    {
+        foreach (var activeModuleId in ModuleIds)
+        {
+            if (activeModuleId == moduleId)
+                return true;
+        }
+
+        return false;
     }
 
     private bool IsModuleCacheCurrent()
@@ -124,6 +175,12 @@ public sealed class MoveMotor : NetworkBehaviour
         {
             if (_cachedModuleIds[index] != moduleId)
                 return false;
+
+            if (_runtimeModuleRegistry.TryResolve(moduleId, out var runtimeModule) &&
+                !ReferenceEquals(_cachedModules[index], runtimeModule))
+            {
+                return false;
+            }
 
             index++;
         }
