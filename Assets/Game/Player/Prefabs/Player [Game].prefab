@@ -310,6 +310,7 @@ GameObject:
   - component: {fileID: 6328219404818720051}
   - component: {fileID: 215184622715371150}
   - component: {fileID: 6599778238374898468}
+  - component: {fileID: 8634517290456182001}
   m_Layer: 0
   m_Name: 'Player [Game]'
   m_TagString: Untagged
@@ -356,6 +357,7 @@ MonoBehaviour:
   - {fileID: 3105360621455613355}
   - {fileID: 215184622715371150}
   - {fileID: 6599778238374898468}
+  - {fileID: 8634517290456182001}
   - {fileID: 1845754458901408638}
   - {fileID: 1424830461310244113}
   - {fileID: 7013244342869802681}
@@ -473,6 +475,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveMotor
   _playerPhysics: {fileID: 520200816651117767}
   _groundSensor: {fileID: 7116025211578619402}
+  _localPlayerSlot: {fileID: 8634517290456182001}
   _moduleInstaller: {fileID: 6328219404818720051}
   _runtimeModuleRegistry: {fileID: 5321917000310761492}
 --- !u!114 &6328219404818720051
@@ -524,6 +527,19 @@ MonoBehaviour:
   _meshRenderer: {fileID: 2525324086669173887}
   _host: {fileID: 2100000, guid: 7016646a657b00049afba3280f50e48d, type: 2}
   _client: {fileID: 2100000, guid: 83b3096af713b2841afeb16a52ca8b8b, type: 2}
+--- !u!114 &8634517290456182001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7073314236796181667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43d3be45b83f4cfa8909fb6b1c07cd10, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::LocalPlayerSlot
+  _Index: 0
 --- !u!1 &7309493080485518320
 GameObject:
   m_ObjectHideFlags: 0

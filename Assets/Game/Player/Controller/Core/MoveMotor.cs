@@ -11,6 +11,7 @@ public sealed class MoveMotor : NetworkBehaviour
     [Header("Physics")]
     [SerializeField] private PlayerPhysics _playerPhysics;
     [SerializeField] private GroundSensor _groundSensor;
+    [SerializeField] private LocalPlayerSlot _localPlayerSlot;
 
     [Header("Modules")]
     [SerializeField] private MotorModuleInstaller _moduleInstaller;
@@ -43,8 +44,10 @@ public sealed class MoveMotor : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!GetInput(out InputData input))
+        if (!GetInput(out InputData combinedInput))
             return;
+
+        var input = combinedInput.GetPlayer(_localPlayerSlot.Index);
 
         _groundSensor.Scan();
 

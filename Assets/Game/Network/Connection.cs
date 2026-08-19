@@ -7,11 +7,16 @@ public sealed class Connection
 {
     private readonly NetworkRunner _runner;
     private readonly VContainerNetworkObjectProvider _objectProvider;
+    private readonly GameSessionSettings _sessionSettings;
 
-    public Connection(NetworkRunner runner, VContainerNetworkObjectProvider objectProvider)
+    public Connection(
+        NetworkRunner runner,
+        VContainerNetworkObjectProvider objectProvider,
+        GameSessionSettings sessionSettings)
     {
         _runner = runner;
         _objectProvider = objectProvider;
+        _sessionSettings = sessionSettings;
     }
 
     public async UniTask<StartGameResult> Connect()
@@ -19,17 +24,27 @@ public sealed class Connection
         SceneRef scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
         _runner.ProvideInput = true;
         
-        var realtimeClient = new RealtimeClient();
-        realtimeClient.ProtocolPorts.SetUdpDefaultOld();
-        
-        return await _runner.StartGame(new StartGameArgs
+        var gameMode = _sessionSettings.SpawnMode == PlayerSpawnMode.Local
+            ? GameMode.Single
+            : GameMode.AutoHostOrClient;
+
+        var startGameArgs = new StartGameArgs
         {
-            GameMode = GameMode.AutoHostOrClient,
-            SessionName = "WindGameRoom",
+            GameMode = gameMode,
             Scene = scene,
             SceneManager = _runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
             ObjectProvider = _objectProvider,
-            RealtimeClient = realtimeClient,
-        });
+        };
+
+        if (gameMode != GameMode.Single)
+        {
+            var realtimeClient = new RealtimeClient();
+            realtimeClient.ProtocolPorts.SetUdpDefaultOld();
+
+            startGameArgs.SessionName = "WindGameRoom";
+            startGameArgs.RealtimeClient = realtimeClient;
+        }
+
+        return await _runner.StartGame(startGameArgs);
     }
 }

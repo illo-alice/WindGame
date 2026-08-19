@@ -4,7 +4,7 @@ using UnityEngine;
 public readonly struct MotorContext
 {
     public MotorContext(
-        InputData input,
+        PlayerInputData input,
         NetworkButtons previousButtons,
         Transform playerTransform,
         IReadOnlyPlayerPhysics physics,
@@ -20,7 +20,7 @@ public readonly struct MotorContext
         DeltaTime = deltaTime;
     }
 
-    public InputData Input { get; }
+    public PlayerInputData Input { get; }
     public NetworkButtons PreviousButtons { get; }
     public Transform PlayerTransform { get; }
     public IReadOnlyPlayerPhysics Physics { get; }

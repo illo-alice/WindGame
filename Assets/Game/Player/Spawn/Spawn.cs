@@ -1,34 +1,38 @@
 using Fusion;
 using UnityEngine;
+using VContainer;
 
-public class Spawn :
+public sealed class Spawn :
     SimulationBehaviour,
     IPlayerJoined,
     IPlayerLeft
 {
     [SerializeField] private NetworkObject _playerPrefab;
     [SerializeField] private Transform _spawnPoint;
-    
+
+    private IPlayerSpawnerProvider _provider;
+
+    [Inject]
+    public void Construct(IPlayerSpawnerProvider provider)
+    {
+        _provider = provider;
+    }
+
     public void PlayerJoined(PlayerRef playerRef)
     {
-        if (!Runner.IsServer) return;
-
-        var playerObject = Runner.Spawn(
-                prefab: _playerPrefab,
-                inputAuthority: playerRef,
-                position: _spawnPoint.position
-            );
-        
-        Runner.SetPlayerObject(playerRef, playerObject);
+        _provider.Spawn(
+            playerRef,
+            Runner,
+            _playerPrefab,
+            _spawnPoint
+        );
     }
 
     public void PlayerLeft(PlayerRef playerRef)
     {
-        if (!Runner.IsServer) return;
-        
-        if (Runner.TryGetPlayerObject(playerRef, out var playerObject))
-        {
-            Runner.Despawn(playerObject);
-        }
+        _provider.Despawn(
+            playerRef,
+            Runner
+        );
     }
 }

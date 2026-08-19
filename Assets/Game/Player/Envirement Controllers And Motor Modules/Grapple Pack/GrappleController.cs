@@ -20,7 +20,7 @@ public sealed class GrappleController : NetworkBehaviour
 
     public bool IsAttached => CurrentAnchor != null;
 
-    public void Simulate(in InputData input)
+    public void Simulate(in PlayerInputData input)
     {
         if (!input.buttons.IsSet(InputType.Fire))
         {
