@@ -72,7 +72,17 @@ public sealed class MoveMotor : NetworkBehaviour
         }
 
         _accumulator.Apply(_playerPhysics);
+        ApplyConstraints(in context);
         PreviousButtons = input.buttons;
+    }
+
+    private void ApplyConstraints(in MotorContext context)
+    {
+        foreach (var module in _cachedModules)
+        {
+            if (module is IMotorConstraint constraint)
+                constraint.ApplyConstraint(in context, _playerPhysics);
+        }
     }
 
     public bool TryAddModule(ContentId moduleConfigId)

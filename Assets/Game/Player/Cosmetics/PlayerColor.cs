@@ -1,29 +1,27 @@
 using Fusion;
 using UnityEngine;
+using UnityEngine.Serialization;
 
+[RequireComponent(typeof(LocalPlayerSlot))]
 public sealed class PlayerColor : NetworkBehaviour
 {
     [SerializeField] private MeshRenderer _meshRenderer;
-    [SerializeField] private Material _host;
-    [SerializeField] private Material _client;
+    [SerializeField, FormerlySerializedAs("_host")] private Material _slot0;
+    [SerializeField, FormerlySerializedAs("_client")] private Material _slot1;
 
-    [Networked, OnChangedRender(nameof(ApplyColor))]
-    private NetworkBool IsHostPlayer { get; set; }
+    private LocalPlayerSlot _localPlayerSlot;
 
     public override void Spawned()
     {
-        if (HasStateAuthority)
-        {
-            IsHostPlayer =
-                Object.InputAuthority == Runner.LocalPlayer;
-        }
-
+        _localPlayerSlot = GetComponent<LocalPlayerSlot>();
         ApplyColor();
     }
 
     private void ApplyColor()
     {
         _meshRenderer.sharedMaterial =
-            IsHostPlayer ? _host : _client;
+            _localPlayerSlot.Index == 0
+                ? _slot0
+                : _slot1;
     }
 }

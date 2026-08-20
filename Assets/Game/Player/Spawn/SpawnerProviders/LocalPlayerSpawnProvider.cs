@@ -84,7 +84,6 @@ public sealed class LocalPlayerSpawnProvider :
                     .SetIndex(slot);
             }
         );
-
         players[slot] = playerObject;
 
         if (slot == 0)

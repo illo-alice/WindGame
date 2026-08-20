@@ -12,7 +12,7 @@ public struct PlayerInputData : INetworkStruct
 {
     public NetworkButtons buttons;
     public Vector2 move;
-    public Vector3 aimTarget;
+    public Vector2 aim;
 }
 
 public struct InputData : INetworkInput

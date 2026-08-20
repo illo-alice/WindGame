@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public sealed class GrappleMotorModule : IMotorModule
+public sealed class GrappleMotorModule : IMotorModule, IMotorConstraint
 {
+    private const float RopeTolerance = 0.02f;
+
     private readonly GrappleController _grappleController;
     private readonly float _swingAcceleration;
     private readonly float _stiffness;
@@ -28,16 +30,24 @@ public sealed class GrappleMotorModule : IMotorModule
             return ForceData.None;
 
         var toAnchor =
-            anchor.TargetPosition - context.PlayerTransform.position;
+            anchor.TargetPosition - _grappleController.OriginPosition;
+
+        toAnchor.z = 0f;
+
         var distance = toAnchor.magnitude;
 
         if (distance <= 0.0001f)
             return ForceData.None;
 
         var direction = toAnchor / distance;
-        var acceleration = EvaluateRopeAcceleration(in context, direction, distance);
+        var ropeAcceleration = EvaluateRopeAcceleration(
+            in context,
+            direction,
+            distance
+        );
         var swingAcceleration = EvaluateSwingAcceleration(in context, direction);
-        var totalAcceleration = direction * acceleration + swingAcceleration;
+        var totalAcceleration =
+            direction * ropeAcceleration + swingAcceleration;
 
         if (totalAcceleration.sqrMagnitude <= 0.000001f)
             return ForceData.None;
@@ -45,12 +55,47 @@ public sealed class GrappleMotorModule : IMotorModule
         return new ForceData(totalAcceleration, ForceMode.Acceleration);
     }
 
+    public void ApplyConstraint(
+        in MotorContext context,
+        IPlayerPhysics physics)
+    {
+        if (!_grappleController.TryGetCurrentAnchor(out var anchor))
+            return;
+
+        var originPosition = _grappleController.OriginPosition;
+        var fromAnchor = originPosition - anchor.TargetPosition;
+        fromAnchor.z = 0f;
+
+        var distance = fromAnchor.magnitude;
+        var ropeLength = _grappleController.RopeLength;
+
+        if (distance <= ropeLength + RopeTolerance || distance <= 0.0001f)
+            return;
+
+        var outwardDirection = fromAnchor / distance;
+        var correctedOrigin =
+            anchor.TargetPosition + outwardDirection * ropeLength;
+        var positionCorrection = correctedOrigin - originPosition;
+        positionCorrection.z = 0f;
+
+        physics.Position += positionCorrection;
+
+        var velocity = physics.LinearVelocity;
+        var outwardSpeed = Vector3.Dot(velocity, outwardDirection);
+
+        if (outwardSpeed > 0f)
+        {
+            physics.LinearVelocity =
+                velocity - outwardDirection * outwardSpeed;
+        }
+    }
+
     private float EvaluateRopeAcceleration(
         in MotorContext context,
         Vector3 direction,
         float distance)
     {
-        var stretch = distance - _grappleController.RopeLength;
+        var stretch = distance - _grappleController.SpringLength;
 
         if (stretch <= 0f)
             return 0f;
@@ -71,11 +116,12 @@ public sealed class GrappleMotorModule : IMotorModule
         in MotorContext context,
         Vector3 ropeDirection)
     {
-        var moveDirection = new Vector3(
-            context.Input.move.x,
-            0f,
-            context.Input.move.y
-        );
+        var horizontalInput = context.Input.move.x;
+
+        if (Mathf.Abs(horizontalInput) <= 0.0001f)
+            return Vector3.zero;
+
+        var moveDirection = Vector3.right * horizontalInput;
 
         var tangentDirection = Vector3.ProjectOnPlane(
             moveDirection,
@@ -87,6 +133,6 @@ public sealed class GrappleMotorModule : IMotorModule
 
         return tangentDirection.normalized *
                _swingAcceleration *
-               Mathf.Clamp01(moveDirection.magnitude);
+               Mathf.Abs(horizontalInput);
     }
 }

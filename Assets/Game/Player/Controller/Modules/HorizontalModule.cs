@@ -25,7 +25,7 @@ public sealed class HorizontalModule : IMotorModule
         Vector3 direction = new(
             context.Input.move.x,
             0f,
-            context.Input.move.y
+            0f
         );
 
         if (direction.sqrMagnitude <= 0.0001f)

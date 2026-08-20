@@ -8,6 +8,8 @@ public sealed class GrappleController : NetworkBehaviour
     [SerializeField] private Transform _origin;
     [SerializeField, Min(0f)] private float _radius = 30f;
     [SerializeField] private LayerMask _actionEnvirementLayerMask;
+    [SerializeField, Range(0f, 180f)] private float _automaticAimAngle = 90f;
+    [SerializeField, Range(0f, 1f)] private float _automaticHorizontalBias = 0.5f;
 
     [Header("Rope")]
     [SerializeField, Min(0f)] private float _initialShortening = 2f;
@@ -17,8 +19,10 @@ public sealed class GrappleController : NetworkBehaviour
 
     [Networked] public NetworkObject CurrentAnchor { get; private set; }
     [Networked] public float RopeLength { get; private set; }
+    [Networked] public float SpringLength { get; private set; }
 
     public bool IsAttached => CurrentAnchor != null;
+    public Vector3 OriginPosition => _origin.position;
 
     public void Simulate(in PlayerInputData input)
     {
@@ -33,12 +37,31 @@ public sealed class GrappleController : NetworkBehaviour
 
         Detach();
 
-        var aimVector = input.aimTarget - _origin.position;
+        var aimVector = new Vector3(
+            input.aim.x,
+            input.aim.y,
+            0f
+        );
 
-        if (aimVector.sqrMagnitude < 0.0001f)
-            return;
+        var hasManualAim = aimVector.sqrMagnitude >= 0.01f;
 
-        if (!TryGetBestAnchor(aimVector.normalized, out var anchor))
+        if (!hasManualAim)
+        {
+            var horizontalDirection = Mathf.Abs(input.move.x) >= 0.1f
+                ? Mathf.Sign(input.move.x)
+                : 0f;
+
+            aimVector = new Vector3(
+                horizontalDirection * _automaticHorizontalBias,
+                1f,
+                0f
+            );
+        }
+
+        if (!TryGetBestAnchor(
+                aimVector.normalized,
+                hasManualAim,
+                out var anchor))
             return;
 
         Attach(anchor);
@@ -48,12 +71,16 @@ public sealed class GrappleController : NetworkBehaviour
     {
         CurrentAnchor = anchor.NetworkObject;
 
-        var distance = Vector3.Distance(
-            _origin.position,
-            anchor.TargetPosition
-        );
+        var toAnchor = anchor.TargetPosition - _origin.position;
+        toAnchor.z = 0f;
+        var distance = toAnchor.magnitude;
 
         RopeLength = Mathf.Max(
+            _minimumRopeLength,
+            distance
+        );
+
+        SpringLength = Mathf.Max(
             _minimumRopeLength,
             distance - _initialShortening
         );
@@ -63,6 +90,7 @@ public sealed class GrappleController : NetworkBehaviour
     {
         CurrentAnchor = default;
         RopeLength = 0f;
+        SpringLength = 0f;
     }
 
     public bool TryGetCurrentAnchor(out GrappleAnchor anchor)
@@ -82,6 +110,7 @@ public sealed class GrappleController : NetworkBehaviour
 
     private bool TryGetBestAnchor(
         Vector3 aimDirection,
+        bool hasManualAim,
         out GrappleAnchor bestAnchor)
     {
         var length = _scanner.Scan(
@@ -105,6 +134,8 @@ public sealed class GrappleController : NetworkBehaviour
             var toAnchor =
                 anchor.TargetPosition - _origin.position;
 
+            toAnchor.z = 0f;
+
             var distance = toAnchor.magnitude;
 
             if (distance > anchor.CaptureRange)
@@ -115,7 +146,11 @@ public sealed class GrappleController : NetworkBehaviour
                 toAnchor.normalized
             );
 
-            if (angle > anchor.AimAssistAngle)
+            var maximumAngle = hasManualAim
+                ? anchor.AimAssistAngle
+                : _automaticAimAngle;
+
+            if (angle > maximumAngle)
                 continue;
 
             if (angle < bestAngle || Mathf.Approximately(angle, bestAngle) && distance < bestDistance)

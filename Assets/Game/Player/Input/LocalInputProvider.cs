@@ -18,6 +18,7 @@ public sealed class LocalInputProvider : MonoBehaviour
     private bool _jumpPressed;
     private bool _initialized;
     private bool _inputEnabled = true;
+    private Transform _aimOrigin;
 
     public int PlayerIndex => _playerInput != null ? _playerInput.playerIndex : -1;
     public Vector2 Look => _inputEnabled
@@ -25,9 +26,31 @@ public sealed class LocalInputProvider : MonoBehaviour
         : default;
     public bool Sprint => _inputEnabled && _sprintAction?.IsPressed() == true;
     public bool Fire => _inputEnabled && _fireAction?.IsPressed() == true;
-    public Vector3 AimTarget => _inputEnabled && _cameraService != null
-        ? _cameraService.AimTarget
-        : default;
+
+    public Vector2 Aim
+    {
+        get
+        {
+            if (!_inputEnabled)
+                return default;
+
+            if (TryGetPointerPosition(out var screenPosition) &&
+                _aimOrigin != null &&
+                _cameraService.TryGetAimDirection(
+                    screenPosition,
+                    _aimOrigin.position,
+                    out var pointerDirection))
+            {
+                return pointerDirection;
+            }
+
+            var direction = Look;
+
+            return direction.sqrMagnitude > 0.01f
+                ? direction.normalized
+                : default;
+        }
+    }
 
     public Vector2 Move
     {
@@ -36,26 +59,7 @@ public sealed class LocalInputProvider : MonoBehaviour
             if (!_inputEnabled)
                 return default;
 
-            var moveValue = _moveAction?.ReadValue<Vector2>() ?? default;
-
-            if (_cameraService == null ||
-                !_cameraService.TryGetTarget(out var cameraTarget))
-                return moveValue;
-
-            var forward = cameraTarget.forward;
-            forward.y = 0f;
-            forward.Normalize();
-
-            var right = cameraTarget.right;
-            right.y = 0f;
-            right.Normalize();
-
-            var direction = forward * moveValue.y + right * moveValue.x;
-
-            if (direction.sqrMagnitude > 1f)
-                direction.Normalize();
-
-            return new Vector2(direction.x, direction.z);
+            return _moveAction?.ReadValue<Vector2>() ?? default;
         }
     }
 
@@ -81,6 +85,17 @@ public sealed class LocalInputProvider : MonoBehaviour
 
         if (!enabled)
             _jumpPressed = false;
+    }
+
+    public void SetAimOrigin(Transform origin)
+    {
+        _aimOrigin = origin;
+    }
+
+    public void ClearAimOrigin(Transform origin)
+    {
+        if (_aimOrigin == origin)
+            _aimOrigin = null;
     }
 
     public void Initialize(
@@ -131,5 +146,20 @@ public sealed class LocalInputProvider : MonoBehaviour
     private void OnJump(InputAction.CallbackContext _)
     {
         _jumpPressed = true;
+    }
+
+    private bool TryGetPointerPosition(out Vector2 position)
+    {
+        foreach (var device in _playerInput.devices)
+        {
+            if (device is Pointer pointer)
+            {
+                position = pointer.position.ReadValue();
+                return true;
+            }
+        }
+
+        position = default;
+        return false;
     }
 }

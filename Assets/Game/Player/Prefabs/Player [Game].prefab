@@ -173,10 +173,13 @@ MonoBehaviour:
   _actionEnvirementLayerMask:
     serializedVersion: 2
     m_Bits: 64
+  _automaticAimAngle: 90
+  _automaticHorizontalBias: 0.5
   _initialShortening: 2
   _minimumRopeLength: 2
   _CurrentAnchor: {fileID: 0}
   _RopeLength: 0
+  _SpringLength: 0
 --- !u!114 &7013244342869802683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -193,8 +196,8 @@ MonoBehaviour:
     _value: 1001
   _airflowModeController: {fileID: 1424830461310244113}
   _grappleController: {fileID: 7013244342869802681}
-  _swingAcceleration: 25
-  _stiffness: 40
+  _swingAcceleration: 20
+  _stiffness: 70
   _damping: 8
   _maximumAcceleration: 80
 --- !u!1 &4426681810219721283
@@ -410,7 +413,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 120
   m_CollisionDetection: 0
 --- !u!114 &344145880949237539
 MonoBehaviour:
@@ -525,8 +528,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerColor
   _meshRenderer: {fileID: 2525324086669173887}
-  _host: {fileID: 2100000, guid: 7016646a657b00049afba3280f50e48d, type: 2}
-  _client: {fileID: 2100000, guid: 83b3096af713b2841afeb16a52ca8b8b, type: 2}
+  _slot0: {fileID: 2100000, guid: 7016646a657b00049afba3280f50e48d, type: 2}
+  _slot1: {fileID: 2100000, guid: 83b3096af713b2841afeb16a52ca8b8b, type: 2}
 --- !u!114 &8634517290456182001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -537,7 +540,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43d3be45b83f4cfa8909fb6b1c07cd10, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalPlayerSlot
   _Index: 0
 --- !u!1 &7309493080485518320

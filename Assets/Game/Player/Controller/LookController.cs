@@ -23,10 +23,9 @@ public class LookController : NetworkBehaviour
 
     public override void Spawned()
     {
-        _localPlayerSlot = GetComponent<LocalPlayerSlot>();
-        enabled = HasInputAuthority;
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        enabled = false;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.Confined;
     }
     
     public override void Render()

@@ -45,7 +45,7 @@ public class FusionInputProvider : MonoBehaviour, INetworkRunnerCallbacks
         {
             buttons = buttons,
             move = provider.Move,
-            aimTarget = provider.AimTarget,
+            aim = provider.Aim,
         };
     }
 

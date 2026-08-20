@@ -11,7 +11,7 @@ public sealed class GroundDecelerationModule : IMotorModule
 
     public ForceData Evaluate(in MotorContext context)
     {
-        if (context.Input.move.sqrMagnitude > 0.0001f ||
+        if (Mathf.Abs(context.Input.move.x) > 0.0001f ||
             !context.Ground.IsGrounded)
         {
             return ForceData.None;
@@ -19,7 +19,7 @@ public sealed class GroundDecelerationModule : IMotorModule
 
         var velocity = context.Physics.HorizontalVelocity;
 
-        if (velocity.sqrMagnitude <= 0.0001f)
+        if (Mathf.Abs(velocity.x) <= 0.0001f)
             return ForceData.None;
 
         var newVelocity = Vector3.MoveTowards(
