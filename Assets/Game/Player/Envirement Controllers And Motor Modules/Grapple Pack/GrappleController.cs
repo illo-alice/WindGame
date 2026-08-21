@@ -116,7 +116,8 @@ public sealed class GrappleController : NetworkBehaviour
         var length = _scanner.Scan(
             _origin.position,
             _radius,
-            _actionEnvirementLayerMask
+            _actionEnvirementLayerMask,
+            QueryTriggerInteraction.Collide
         );
 
         var bestAngle = float.MaxValue;

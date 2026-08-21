@@ -1,14 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using VContainer;
 
 [DisallowMultipleComponent]
 public sealed class LocalInputDisconnectWarning : MonoBehaviour
 {
-    [SerializeField] private Image _image;
+    [SerializeField] private TextMeshProUGUI _text;
 
-    private readonly bool[] _disconnected =
-        new bool[LocalInputRegistry.Capacity];
+    private readonly string[][] _disconnectedDevices =
+        new string[LocalInputRegistry.Capacity][];
 
     private LocalInputRegistry _registry;
 
@@ -32,12 +35,16 @@ public sealed class LocalInputDisconnectWarning : MonoBehaviour
 
     private void OnDeviceConnectionChanged(
         int playerIndex,
-        bool connected)
+        bool connected,
+        IReadOnlyList<string> deviceNames)
     {
         if ((uint)playerIndex >= LocalInputRegistry.Capacity)
             return;
 
-        _disconnected[playerIndex] = !connected;
+        _disconnectedDevices[playerIndex] = connected
+            ? null
+            : CopyDeviceNames(deviceNames);
+
         Refresh();
     }
 
@@ -46,17 +53,57 @@ public sealed class LocalInputDisconnectWarning : MonoBehaviour
         if ((uint)playerIndex >= LocalInputRegistry.Capacity)
             return;
 
-        _disconnected[playerIndex] = false;
+        _disconnectedDevices[playerIndex] = null;
         Refresh();
     }
 
     private void Refresh()
     {
-        var show = false;
+        if (_text == null)
+            return;
 
-        foreach (var disconnected in _disconnected)
-            show |= disconnected;
+        var builder = new StringBuilder();
 
-        _image.gameObject.SetActive(show);
+        for (var i = 0; i < _disconnectedDevices.Length; i++)
+        {
+            var deviceNames = _disconnectedDevices[i];
+
+            if (deviceNames == null)
+                continue;
+
+            if (builder.Length > 0)
+                builder.AppendLine();
+
+            builder.Append("Player ")
+                .Append(i + 1)
+                .Append(": ");
+
+            if (deviceNames.Length == 0)
+            {
+                builder.Append("input device disconnected");
+                continue;
+            }
+
+            builder.AppendJoin(", ", deviceNames)
+                .Append(" disconnected");
+        }
+
+        _text.text = builder.ToString();
+
+        _text.gameObject.SetActive(builder.Length > 0);
+    }
+
+    private static string[] CopyDeviceNames(
+        IReadOnlyList<string> deviceNames)
+    {
+        if (deviceNames == null || deviceNames.Count == 0)
+            return Array.Empty<string>();
+
+        var copy = new string[deviceNames.Count];
+
+        for (var i = 0; i < deviceNames.Count; i++)
+            copy[i] = deviceNames[i];
+
+        return copy;
     }
 }

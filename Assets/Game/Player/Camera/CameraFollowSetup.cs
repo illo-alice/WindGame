@@ -8,7 +8,8 @@ public class CameraFollowSetup : NetworkBehaviour
 
     private CameraService _cameraService;
     private LocalInputRegistry _localInputs;
-    private LocalPlayerSlot _localPlayerSlot;
+    private InputSlot _inputSlot;
+    private bool _hasLocalInputAuthority;
 
     [Inject]
     public void Construct(
@@ -21,25 +22,28 @@ public class CameraFollowSetup : NetworkBehaviour
 
     public override void Spawned()
     {
-        if (!HasInputAuthority)
-            return;
-
-        _localPlayerSlot = GetComponentInParent<LocalPlayerSlot>();
         _cameraService.AddTarget(_target);
 
-        if (_localInputs.TryGet(_localPlayerSlot.Index, out var localInput))
+        _hasLocalInputAuthority = HasInputAuthority;
+
+        if (!_hasLocalInputAuthority)
+            return;
+
+        _inputSlot = GetComponentInParent<InputSlot>();
+
+        if (_localInputs.TryGet(_inputSlot.Index, out var localInput))
             localInput.SetAimOrigin(_target);
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        if (!HasInputAuthority)
-            return;
-
         _cameraService.RemoveTarget(_target);
 
-        if (_localPlayerSlot != null &&
-            _localInputs.TryGet(_localPlayerSlot.Index, out var localInput))
+        if (!_hasLocalInputAuthority)
+            return;
+
+        if (_inputSlot != null &&
+            _localInputs.TryGet(_inputSlot.Index, out var localInput))
         {
             localInput.ClearAimOrigin(_target);
         }

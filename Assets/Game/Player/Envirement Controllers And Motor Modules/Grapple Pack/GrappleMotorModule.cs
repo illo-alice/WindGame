@@ -2,8 +2,6 @@ using UnityEngine;
 
 public sealed class GrappleMotorModule : IMotorModule, IMotorConstraint
 {
-    private const float RopeTolerance = 0.02f;
-
     private readonly GrappleController _grappleController;
     private readonly float _swingAcceleration;
     private readonly float _stiffness;
@@ -67,26 +65,43 @@ public sealed class GrappleMotorModule : IMotorModule, IMotorConstraint
         fromAnchor.z = 0f;
 
         var distance = fromAnchor.magnitude;
-        var ropeLength = _grappleController.RopeLength;
 
-        if (distance <= ropeLength + RopeTolerance || distance <= 0.0001f)
+        if (distance <= 0.0001f)
             return;
 
+        var ropeLength = _grappleController.RopeLength;
         var outwardDirection = fromAnchor / distance;
-        var correctedOrigin =
-            anchor.TargetPosition + outwardDirection * ropeLength;
-        var positionCorrection = correctedOrigin - originPosition;
-        positionCorrection.z = 0f;
+        
+        if (distance > ropeLength)
+        {
+            var correctedOrigin =
+                anchor.TargetPosition + outwardDirection * ropeLength;
 
-        physics.Position += positionCorrection;
+            var correction = correctedOrigin - originPosition;
+            correction.z = 0f;
+
+            physics.Position += correction;
+            distance = ropeLength;
+        }
 
         var velocity = physics.LinearVelocity;
         var outwardSpeed = Vector3.Dot(velocity, outwardDirection);
 
-        if (outwardSpeed > 0f)
+        if (outwardSpeed <= 0f)
+            return;
+
+        // Максимальная допустимая скорость наружу, чтобы за следующий
+        // физический тик не пересечь RopeLength.
+        var remainingDistance = Mathf.Max(0f, ropeLength - distance);
+        var maximumOutwardSpeed =
+            remainingDistance / context.DeltaTime;
+
+        if (outwardSpeed > maximumOutwardSpeed)
         {
             physics.LinearVelocity =
-                velocity - outwardDirection * outwardSpeed;
+                velocity -
+                outwardDirection *
+                (outwardSpeed - maximumOutwardSpeed);
         }
     }
 

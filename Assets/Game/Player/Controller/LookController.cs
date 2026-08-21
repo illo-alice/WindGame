@@ -10,7 +10,7 @@ public class LookController : NetworkBehaviour
     [SerializeField] private float _maxPitch = 70f;
 
     private LocalInputRegistry _localInputs;
-    private LocalPlayerSlot _localPlayerSlot;
+    private InputSlot _inputSlot;
     
     private float _yaw;
     private float _pitch;
@@ -31,8 +31,8 @@ public class LookController : NetworkBehaviour
     public override void Render()
     {
         if (_localInputs == null ||
-            _localPlayerSlot == null ||
-            !_localInputs.TryGet(_localPlayerSlot.Index, out var localInput))
+            _inputSlot == null ||
+            !_localInputs.TryGet(_inputSlot.Index, out var localInput))
             return;
 
         _yaw += localInput.Look.x * _sensitivity;

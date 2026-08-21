@@ -122,3 +122,10 @@ InitTestScene*.unity*
 !/Assets/Photon/Fusion/Resources/NetworkProjectConfig.fusion.meta
 !/Assets/Photon/Fusion/Resources/PhotonAppSettings.asset
 !/Assets/Photon/Fusion/Resources/PhotonAppSettings.asset.meta
+
+# Local Steamworks development AppID (for example, Spacewar 480).
+/steam_appid.txt
+
+# Optional TextMesh Pro sample scenes and assets imported into the editor.
+/Assets/TextMesh Pro/Examples & Extras.meta
+/Assets/TextMesh Pro/Examples & Extras/

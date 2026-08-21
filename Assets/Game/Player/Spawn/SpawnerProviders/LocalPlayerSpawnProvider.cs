@@ -80,7 +80,9 @@ public sealed class LocalPlayerSpawnProvider :
             onBeforeSpawned: (_, networkObject) =>
             {
                 networkObject
-                    .GetComponent<LocalPlayerSlot>()
+                    .GetComponent<InputSlot>()
+                    .SetIndex(slot);
+                networkObject.GetComponent<PlayerSlot>()
                     .SetIndex(slot);
             }
         );

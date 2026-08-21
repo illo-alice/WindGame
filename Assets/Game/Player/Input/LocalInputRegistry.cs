@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public sealed class LocalInputRegistry
 {
@@ -9,7 +10,7 @@ public sealed class LocalInputRegistry
 
     public event Action<int> ProviderRegistered;
     public event Action<int> ProviderUnregistered;
-    public event Action<int, bool> DeviceConnectionChanged;
+    public event Action<int, bool, IReadOnlyList<string>> DeviceConnectionChanged;
 
     public bool TryGet(int playerIndex, out LocalInputProvider provider)
     {
@@ -48,11 +49,16 @@ public sealed class LocalInputRegistry
 
     public void NotifyDeviceConnectionChanged(
         int playerIndex,
-        bool connected)
+        bool connected,
+        IReadOnlyList<string> deviceNames)
     {
         if ((uint)playerIndex >= Capacity)
             throw new ArgumentOutOfRangeException(nameof(playerIndex));
 
-        DeviceConnectionChanged?.Invoke(playerIndex, connected);
+        DeviceConnectionChanged?.Invoke(
+            playerIndex,
+            connected,
+            deviceNames ?? Array.Empty<string>()
+        );
     }
 }

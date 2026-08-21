@@ -22,4 +22,23 @@ public sealed class GrappleAnchor : MonoBehaviour
     {
         _networkObject = GetComponent<NetworkObject>();
     }
+    
+    private void OnDrawGizmos()
+    {
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.color = Color.yellow;
+
+        var angleStep = 360f / 32f;
+        Vector3 lastPoint = new Vector3(_captureRange, 0, 0);
+
+        for (var i = 1; i <= 32; i++)
+        {
+            var angle = i * angleStep * Mathf.Deg2Rad;
+            var currentPoint = new Vector3(Mathf.Cos(angle) * _captureRange, Mathf.Sin(angle) * _captureRange, 0);
+        
+            Gizmos.DrawLine(lastPoint, currentPoint);
+            lastPoint = currentPoint;
+        }
+            
+    }
 }

@@ -35,5 +35,7 @@ public class GameLifetimeScope : LifetimeScope
         builder.RegisterComponentInHierarchy<LocalPlayerInputManager>();
         builder.RegisterComponentInHierarchy<LocalInputDisconnectWarning>();
         builder.RegisterComponentInHierarchy<FusionInputProvider>();
+        
+        builder.RegisterComponentInHierarchy<SteamService>();
     }
 }

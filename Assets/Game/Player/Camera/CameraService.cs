@@ -14,7 +14,7 @@ public class CameraService : MonoBehaviour
             _cameraTargetGroup.RemoveMember(_cameraTargetGroup.transform);
 
         if (_cameraTargetGroup.FindMember(target) < 0)
-            _cameraTargetGroup.AddMember(target, 1, 3);
+            _cameraTargetGroup.AddMember(target, 1, 6);
     }
 
     public void RemoveTarget(Transform target)

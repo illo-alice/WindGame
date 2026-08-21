@@ -20,7 +20,13 @@ public sealed class LocalInputDeviceMonitor : MonoBehaviour
         _playerInput = GetComponent<PlayerInput>();
 
         Subscribe();
-        RefreshConnectionState();
+
+        var lostDeviceNames = GetLostDeviceNames(_playerInput);
+        SetConnected(
+            lostDeviceNames.Length == 0 &&
+            !_playerInput.hasMissingRequiredDevices,
+            lostDeviceNames
+        );
     }
 
     private void OnEnable()
@@ -49,27 +55,44 @@ public sealed class LocalInputDeviceMonitor : MonoBehaviour
         _subscribed = true;
     }
 
-    private void OnDeviceLost(PlayerInput _)
+    private void OnDeviceLost(PlayerInput playerInput)
     {
-        RefreshConnectionState();
+        SetConnected(false, GetLostDeviceNames(playerInput));
     }
 
-    private void OnDeviceRegained(PlayerInput _)
+    private void OnDeviceRegained(PlayerInput playerInput)
     {
-        RefreshConnectionState();
+        var lostDeviceNames = GetLostDeviceNames(playerInput);
+        SetConnected(
+            lostDeviceNames.Length == 0 &&
+            playerInput.user.valid,
+            lostDeviceNames
+        );
     }
 
-    private void RefreshConnectionState()
-    {
-        SetConnected(!_playerInput.hasMissingRequiredDevices);
-    }
-
-    private void SetConnected(bool connected)
+    private void SetConnected(bool connected, string[] deviceNames)
     {
         _inputProvider.SetInputEnabled(connected);
         _registry.NotifyDeviceConnectionChanged(
             _playerInput.playerIndex,
-            connected
+            connected,
+            deviceNames
         );
+    }
+
+    private static string[] GetLostDeviceNames(PlayerInput playerInput)
+    {
+        var lostDevices = playerInput.user.lostDevices;
+        var names = new string[lostDevices.Count];
+
+        for (var i = 0; i < lostDevices.Count; i++)
+        {
+            var device = lostDevices[i];
+            names[i] = string.IsNullOrWhiteSpace(device.displayName)
+                ? device.name
+                : device.displayName;
+        }
+
+        return names;
     }
 }

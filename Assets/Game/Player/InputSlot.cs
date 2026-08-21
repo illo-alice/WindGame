@@ -3,7 +3,7 @@ using Fusion;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public sealed class LocalPlayerSlot : NetworkBehaviour
+public sealed class InputSlot : NetworkBehaviour
 {
     [Networked] public byte Index { get; private set; }
 

@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Fusion;
 using Photon.Realtime;
@@ -8,15 +9,18 @@ public sealed class Connection
     private readonly NetworkRunner _runner;
     private readonly VContainerNetworkObjectProvider _objectProvider;
     private readonly GameSessionSettings _sessionSettings;
+    private readonly SteamService _steamService;
 
     public Connection(
         NetworkRunner runner,
         VContainerNetworkObjectProvider objectProvider,
-        GameSessionSettings sessionSettings)
+        GameSessionSettings sessionSettings,
+        SteamService steamService)
     {
         _runner = runner;
         _objectProvider = objectProvider;
         _sessionSettings = sessionSettings;
+        _steamService = steamService;
     }
 
     public async UniTask<StartGameResult> Connect()
@@ -36,6 +40,18 @@ public sealed class Connection
             ObjectProvider = _objectProvider,
         };
 
+        if (!_steamService.IsInitialized)
+        {
+            throw new InvalidOperationException(
+                "Steam must be initialized before connecting."
+            );
+        }
+
+        startGameArgs.AuthValues = new AuthenticationValues
+        {
+            UserId = _steamService.SteamId
+        };
+        
         if (gameMode != GameMode.Single)
         {
             var realtimeClient = new RealtimeClient();
